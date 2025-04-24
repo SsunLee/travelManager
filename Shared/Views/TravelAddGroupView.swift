@@ -4,10 +4,14 @@ struct TravelAddGroupView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.presentationMode) var presentationMode
     
+    // Read profile name from AppStorage
+    @AppStorage("profileName") var profileName: String = "나"
+    
     @State private var title = ""
     @State private var startDate = Date()
     @State private var endDate = Date()
-    @State private var members: [String] = ["나"]
+    // State for *additional* members added by the user
+    @State private var members: [String] = [] 
     @State private var newMember = ""
     
     var body: some View {
@@ -20,13 +24,19 @@ struct TravelAddGroupView: View {
                 }
                 
                 Section(header: Text("여행 멤버")) {
+                    // Always display the profile owner (non-deletable)
+                    Text(profileName) 
+                        .foregroundColor(.secondary) // Indicate it's the owner
+                    
+                    // List additional members (deletable)
                     ForEach(members, id: \.self) { member in
                         Text(member)
                     }
-                    .onDelete(perform: deleteMember)
+                    .onDelete(perform: deleteMember) // Only allow deleting additional members
                     
+                    // Add new member input
                     HStack {
-                        TextField("새 멤버", text: $newMember)
+                        TextField("새 멤버 추가", text: $newMember)
                         Button(action: addMember) {
                             Image(systemName: "plus.circle.fill")
                         }
@@ -51,13 +61,16 @@ struct TravelAddGroupView: View {
         }
     }
     
+    // Adds member to the additional members list
     private func addMember() {
-        if !newMember.isEmpty {
+        if !newMember.isEmpty && !members.contains(newMember) && newMember != profileName {
             members.append(newMember)
             newMember = ""
         }
+        // TODO: Add user feedback if name already exists or is the profile owner
     }
     
+    // Deletes from the additional members list
     private func deleteMember(at offsets: IndexSet) {
         members.remove(atOffsets: offsets)
     }
@@ -68,8 +81,14 @@ struct TravelAddGroupView: View {
         newTravel.title = title
         newTravel.startDate = startDate
         newTravel.endDate = endDate
-        newTravel.members = members
-        newTravel.memberAccessToken = UUID()
+        
+        // Combine profile owner and additional members for saving
+        var finalMembers = [profileName] // Start with profile owner
+        finalMembers.append(contentsOf: members.filter { $0 != profileName }) // Add others, ensure no duplicates
+        newTravel.members = finalMembers
+        
+        // Ensure memberAccessToken is generated (if needed, otherwise remove)
+        newTravel.memberAccessToken = UUID() 
         
         do {
             try viewContext.save()

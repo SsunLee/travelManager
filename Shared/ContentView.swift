@@ -9,79 +9,75 @@ import SwiftUI
 import CoreData
 
 struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
-
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-        animation: .default)
-    private var items: FetchedResults<Item>
-
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
-                    } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
-                    }
+        TabView {
+            // First Tab: Home (Existing TravelMainView)
+            TravelMainView()
+                .tabItem {
+                    Label("홈", systemImage: "house")
                 }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
+            
+            // Second Tab: Menu (Placeholder)
+            MenuView()
+                .tabItem {
+                    Label("메뉴", systemImage: "list.bullet")
                 }
-#endif
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { items[$0] }.forEach(viewContext.delete)
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
         }
     }
 }
 
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
+// Settings View for the Menu Tab
+struct MenuView: View {
+    // 0: System, 1: Light, 2: Dark
+    @AppStorage("selectedAppearance") var selectedAppearance: Int = 0 
+    
+    // App Version
+    let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "N/A"
+    let buildVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "N/A"
+    
+    var body: some View {
+        NavigationView { 
+            Form {
+                Section(header: Text("내 프로필")) {
+                    NavigationLink(destination: ProfileEditView()) {
+                        Text("프로필 수정")
+                    }
+                }
+                
+                Section(header: Text("화면 테마 설정")) {
+                    Picker("화면 모드", selection: $selectedAppearance) {
+                        Text("기기 설정 동일").tag(0)
+                        Text("라이트 모드").tag(1)
+                        Text("다크 모드").tag(2)
+                    }
+                    // Optional: Display current selection text if Picker style needs it
+                    // Text(currentAppearanceDescription) 
+                }
+                
+                Section(header: Text("앱 정보")) {
+                    HStack {
+                        Text("앱 버전")
+                        Spacer()
+                        Text("v\(appVersion) (\(buildVersion))")
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+            .navigationTitle("메뉴")
+        }
+    }
+    
+    // Optional helper to display text for current selection
+    /*
+    private var currentAppearanceDescription: String {
+        switch selectedAppearance {
+        case 1: return "라이트 모드"
+        case 2: return "다크 모드"
+        default: return "기기 설정 동일"
+        }
+    }
+    */
+}
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {

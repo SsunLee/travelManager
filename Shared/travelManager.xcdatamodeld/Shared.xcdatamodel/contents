@@ -1,9 +1,36 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1" systemVersion="11A491" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="true" userDefinedModelVersionIdentifier="">
-    <entity name="Item" representedClassName="Item" syncable="YES" codeGenerationType="class">
-        <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+    <entity name="TravelGroup" representedClassName="TravelGroup" syncable="YES" codeGenerationType="class">
+        <attribute name="endDate" optional="YES" attributeType="Date"/>
+        <attribute name="id" optional="YES" attributeType="UUID"/>
+        <attribute name="isPinned" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="memberAccessToken" optional="YES" attributeType="UUID"/>
+        <attribute name="members" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[String]"/>
+        <attribute name="memo" optional="YES" attributeType="String"/>
+        <attribute name="startDate" optional="YES" attributeType="Date"/>
+        <attribute name="title" attributeType="String" defaultValueString=""/>
+        <relationship name="gallery" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="TravelPhoto" inverseName="travelGroup" inverseEntity="TravelPhoto"/>
+        <relationship name="payHistory" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="PayHistory" inverseName="travelGroup" inverseEntity="PayHistory"/>
+    </entity>
+    <entity name="PayHistory" representedClassName="PayHistory" syncable="YES" codeGenerationType="class">
+        <attribute name="amount" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="cardOwner" attributeType="String" defaultValueString=""/>
+        <attribute name="date" optional="YES" attributeType="Date"/>
+        <attribute name="id" optional="YES" attributeType="UUID"/>
+        <attribute name="memo" optional="YES" attributeType="String"/>
+        <attribute name="participants" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[String]"/>
+        <attribute name="place" attributeType="String" defaultValueString=""/>
+        <attribute name="receiptImage" optional="YES" attributeType="Binary"/>
+        <relationship name="travelGroup" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TravelGroup" inverseName="payHistory" inverseEntity="TravelGroup"/>
+    </entity>
+    <entity name="TravelPhoto" representedClassName="TravelPhoto" syncable="YES" codeGenerationType="class">
+        <attribute name="caption" optional="YES" attributeType="String"/>
+        <attribute name="date" optional="YES" attributeType="Date"/>
+        <attribute name="id" optional="YES" attributeType="UUID"/>
+        <attribute name="imageData" optional="YES" attributeType="Binary"/>
+        <relationship name="travelGroup" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TravelGroup" inverseName="gallery" inverseEntity="TravelGroup"/>
     </entity>
     <elements>
-        <element name="Item" positionX="-63" positionY="-18" width="128" height="44"/>
+        
     </elements>
 </model>
